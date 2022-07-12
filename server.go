@@ -1,31 +1,31 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/voideus/golang-mux-rest/controller"
 	router "github.com/voideus/golang-mux-rest/http"
+	"github.com/voideus/golang-mux-rest/lib"
 	"github.com/voideus/golang-mux-rest/repository"
 	"github.com/voideus/golang-mux-rest/service"
+	"go.uber.org/fx"
 )
 
-var (
-	httpRouter     router.Router             = router.NewChiRouter()
-	postRepository repository.PostRepository = repository.NewFirestoreRepository()
-	postService    service.PostService       = service.NewPostService(postRepository)
-	postController controller.PostController = controller.NewPostController(postService)
-)
 
-func main() {
-	const port string = ":8000"
-	// os.Setenv("GOOGLE_APPIVATION_CREDENTIALS", "./firebase/token.json")
-	httpRouter.GET("/", func(res http.ResponseWriter, req *http.Request) {
-		fmt.Fprintln(res, "Up and running...")
-	})
+func main() {	
+	fx.New(fx.Options(
+		router.Module,
+		lib.Module,
+		controller.Module,
+		service.Module,
+		repository.Module,
+		fx.Provide(http.NewServeMux),
+	),
+		fx.Invoke(startApp),
+	).Run()
+}
 
-	httpRouter.GET("/posts", postController.GetPosts)
-	httpRouter.POST("/posts", postController.AddPost)
-
-	httpRouter.SERVE(port)
+func startApp(router router.MuxHandler, mux *http.ServeMux) {
+	router.SetupRoutes()
+	go http.ListenAndServe(":5000", mux)
 }

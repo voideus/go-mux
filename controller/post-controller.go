@@ -7,6 +7,7 @@ import (
 	"github.com/voideus/golang-mux-rest/entity"
 	"github.com/voideus/golang-mux-rest/errors"
 	"github.com/voideus/golang-mux-rest/service"
+	"go.uber.org/fx"
 )
 
 type controller struct{}
@@ -24,10 +25,6 @@ func NewPostController(service service.PostService) PostController {
 	postService = service
 	return &controller{}
 }
-
-// func init() {
-// 	posts = []Post{{Id: 1, Title: "Title 1", Text: "Text 1"}}
-// }
 
 func (*controller) GetPosts(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Content-type", "application/json")
@@ -76,3 +73,7 @@ func (*controller) AddPost(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusOK)
 	json.NewEncoder(res).Encode(result)
 }
+
+var Module = fx.Options(
+	fx.Provide(NewPostController),
+)

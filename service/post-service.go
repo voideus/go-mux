@@ -6,6 +6,7 @@ import (
 
 	"github.com/voideus/golang-mux-rest/entity"
 	"github.com/voideus/golang-mux-rest/repository"
+	"go.uber.org/fx"
 )
 
 type PostService interface {
@@ -44,3 +45,7 @@ func (*service) Create(post *entity.Post) (*entity.Post, error) {
 func (*service) FindAll() ([]entity.Post, error) {
 	return repo.FindAll()
 }
+
+var Module = fx.Options(
+	fx.Provide(NewPostService),
+)

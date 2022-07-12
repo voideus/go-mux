@@ -6,6 +6,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/voideus/golang-mux-rest/entity"
+	"go.uber.org/fx"
 	"google.golang.org/api/iterator"
 )
 
@@ -75,3 +76,7 @@ func (*repo) FindAll() ([]entity.Post, error) {
 	}
 	return posts, nil
 }
+
+var Module = fx.Options(
+	fx.Provide(NewFirestoreRepository),
+)
