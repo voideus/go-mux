@@ -15,14 +15,14 @@ import (
 
 func registerHooks(
 	lifecycle fx.Lifecycle,
-	router router.MuxHandler, mux *http.ServeMux,
+	router router.MuxHandler, mux *http.ServeMux, env *lib.Env,
 ) {
 	lifecycle.Append(
 		fx.Hook{
 			OnStart: func(context.Context) error {
-				fmt.Println("Server up and running")
+				fmt.Printf("Server up and running on port: %v", env.ServerPort)
 				router.SetupRoutes()
-				go http.ListenAndServe(":5000", mux)
+				go http.ListenAndServe(env.ServerPort, mux)
 				return nil
 			},
 			OnStop: func(context.Context) error {

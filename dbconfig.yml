@@ -1,0 +1,9 @@
+development:
+  dialect: sqlite3
+  datasource: report.db
+  table: migrations
+  dir: migrations/sqlite3
+test:
+  dialect: mysql
+  datasource: root:pass@tcp(localhost:3306)/report
+  dir: migrations
