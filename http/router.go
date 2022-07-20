@@ -13,5 +13,5 @@ type Router interface {
 }
 
 var Module = fx.Options(
-	fx.Provide(NewMuxRouter),
+	fx.Provide(NewGinRouter),
 )

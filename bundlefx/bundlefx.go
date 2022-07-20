@@ -3,10 +3,11 @@ package bundlefx
 import (
 	"context"
 	"fmt"
-	"net/http"
 
+	"github.com/voideus/golang-mux-rest/api/middlewares"
+	"github.com/voideus/golang-mux-rest/api/routes"
 	"github.com/voideus/golang-mux-rest/controller"
-	router "github.com/voideus/golang-mux-rest/http"
+	"github.com/voideus/golang-mux-rest/infrastructure"
 	"github.com/voideus/golang-mux-rest/lib"
 	"github.com/voideus/golang-mux-rest/repository"
 	"github.com/voideus/golang-mux-rest/service"
@@ -15,14 +16,21 @@ import (
 
 func registerHooks(
 	lifecycle fx.Lifecycle,
-	router router.MuxHandler, mux *http.ServeMux, env *lib.Env,
+	router infrastructure.Router, env *lib.Env,
+	route routes.Routes,
 ) {
 	lifecycle.Append(
 		fx.Hook{
 			OnStart: func(context.Context) error {
+				// router.SetupRoutes()
+				// go http.ListenAndServe(env.ServerPort, gin)
+				route.Setup()
+				// if err := go router.Run(":5000"); err != nil {
+				// 	fmt.Printf("error running server: %s", err)
+				// 	return err
+				// }
+				go router.Run(":5000")
 				fmt.Printf("Server up and running on port: %v", env.ServerPort)
-				router.SetupRoutes()
-				go http.ListenAndServe(env.ServerPort, mux)
 				return nil
 			},
 			OnStop: func(context.Context) error {
@@ -34,11 +42,14 @@ func registerHooks(
 }
 
 var Module = fx.Options(
-	router.Module,
+	routes.Module,
 	lib.Module,
 	controller.Module,
 	service.Module,
 	repository.Module,
-	fx.Provide(http.NewServeMux),
+	middlewares.Module,
+	infrastructure.Module,
+	// fx.Provide(http.NewServeMux),
+	// fx.Provide(gin.Default()),
 	fx.Invoke(registerHooks),
 )

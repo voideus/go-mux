@@ -1,11 +1,7 @@
 package controller
 
 import (
-	"encoding/json"
-	"net/http"
-
-	"github.com/voideus/golang-mux-rest/entity"
-	"github.com/voideus/golang-mux-rest/errors"
+	"github.com/gin-gonic/gin"
 	"github.com/voideus/golang-mux-rest/service"
 	"go.uber.org/fx"
 )
@@ -17,8 +13,8 @@ var (
 )
 
 type PostController interface {
-	GetPosts(res http.ResponseWriter, req *http.Request)
-	AddPost(res http.ResponseWriter, req *http.Request)
+	GetPosts(c *gin.Context)
+	AddPost(c *gin.Context)
 }
 
 func NewPostController(service service.PostService) PostController {
@@ -26,14 +22,18 @@ func NewPostController(service service.PostService) PostController {
 	return &controller{}
 }
 
-func (*controller) GetPosts(res http.ResponseWriter, req *http.Request) {
-	res.Header().Set("Content-type", "application/json")
+func (*controller) GetPosts(c *gin.Context) {
+
+	c.Header("Content-type", "application/json")
 	posts, err := postService.FindAll()
 	if err != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(res).Encode(errors.ServiceError{Message: "Error getting the posts array"})
+		c.Abort()
+		// json.NewEncoder(c).Encode(errors.ServiceError{Message: "Error getting the posts array"})
 		return
 	}
+	c.JSON(200, gin.H{
+		"data": posts,
+	})
 
 	// result, err := json.Marshal(posts)
 	// if err != nil {
@@ -42,36 +42,36 @@ func (*controller) GetPosts(res http.ResponseWriter, req *http.Request) {
 	// 	return
 	// }
 
-	res.WriteHeader(http.StatusOK)
-	json.NewEncoder(res).Encode(posts)
+	// c.res.WriteHeader(http.StatusOK)
+	// json.NewEncoder(c.res).Encode(posts)
 }
 
-func (*controller) AddPost(res http.ResponseWriter, req *http.Request) {
-	var post entity.Post
-	res.Header().Set("Content-type", "application/json")
-	err := json.NewDecoder(req.Body).Decode(&post)
-	if err != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(res).Encode(errors.ServiceError{Message: "Error marshalling the request"})
-		return
-	}
+func (*controller) AddPost(c *gin.Context) {
+	// var post entity.Post
+	// res.Header().Set("Content-type", "application/json")
+	// err := json.NewDecoder(req.Body).Decode(&post)
+	// if err != nil {
+	// 	res.WriteHeader(http.StatusInternalServerError)
+	// 	json.NewEncoder(res).Encode(errors.ServiceError{Message: "Error marshalling the request"})
+	// 	return
+	// }
 
-	err1 := postService.Validate(&post)
-	if err1 != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(res).Encode(errors.ServiceError{Message: err1.Error()})
-		return
-	}
+	// err1 := postService.Validate(&post)
+	// if err1 != nil {
+	// 	res.WriteHeader(http.StatusInternalServerError)
+	// 	json.NewEncoder(res).Encode(errors.ServiceError{Message: err1.Error()})
+	// 	return
+	// }
 
-	result, err2 := postService.Create(&post)
-	if err2 != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(res).Encode(errors.ServiceError{Message: "Error saving the post"})
-		return
-	}
+	// result, err2 := postService.Create(&post)
+	// if err2 != nil {
+	// 	res.WriteHeader(http.StatusInternalServerError)
+	// 	json.NewEncoder(res).Encode(errors.ServiceError{Message: "Error saving the post"})
+	// 	return
+	// }
 
-	res.WriteHeader(http.StatusOK)
-	json.NewEncoder(res).Encode(result)
+	// res.WriteHeader(http.StatusOK)
+	// json.NewEncoder(res).Encode(result)
 }
 
 var Module = fx.Options(
